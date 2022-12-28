@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes:
+        - name: postgres-storage #Ini harus persis dengan spec:containers:volumeMounts:name
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim #ambil dari database-persistent-volume.yaml:metadata:name
+      containers:
+      - name: postgres
+        image: postgres
+        ports:
+        - containerPort: 5432
+        env:
+          - name: POSTGRES_PASSWORD #env name dari image postgres nya
+            valueFrom: 
+              secretKeyRef:
+                name: pgpassword
+                key: PGPASSWORD
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-storage #Ini harus persis dengan spec:volumes:name
+            subPath: postgres #Ini buat simpen di folder postgres di dalam persistentVolumeClaim. Ini biar bisa punya 2 postgres dalam 1 PVC
+                              #Tapi ini issue related ke postgres aja
+        resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"

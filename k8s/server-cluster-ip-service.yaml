@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: server-cluster-ip-service
+spec: 
+  type: ClusterIP
+  selector:
+    component: server #Persis dengan yang ada di server-deployment.yaml: tempalte -> metadata -> labels -> key:value yang ada di sini
+  ports: 
+    - port: 5000 #Ini port yang digunakan object lain untuk akses si container
+      targetPort: 5000 #Ini port yang sebenarnya dibuka container. 

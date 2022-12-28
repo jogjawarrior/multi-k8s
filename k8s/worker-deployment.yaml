@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1 #Harusnya justru ini yang replicanya paling banyak
+  selector: 
+    matchLabels:
+      component: worker
+  template:
+    metadata:
+      labels:
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: stephengrider/multi-worker
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service #Ini name dari cluster IP service nya. Cek di redis-cluster-ip-service.yaml:metadata:name
+            - name: REDIS_PORT
+              value: "6379"
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"          

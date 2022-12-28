@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: server
+      #portOfAPI: api #Ini juga bisa sebenernya. Yang penting kembar aja sama labels di pod
+  template:
+    metadata:
+      labels:
+        component: server
+    spec: 
+      containers:
+        - name: server
+          image: cygnetops/multi-server-pgfix-5-11
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: PGUSER
+              value: postgres #defaultnya postgre
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: postgres #defaultnya postgre
+            - name: PGPASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: pgpassword #<secret name>
+                  key: PGPASSWORD #key dari secret tersebut. Harus didefine karena bisa aja 1 secret punya beberapa key
+                    #Didapat dari CLI (jadi harus setting manual baik di prod maupun di dev) dengan command
+                    #kubectl create secret <type of secret> <secret name> --from-literal <key>=<value>
+                    #contoh : kubectl create secret generic pgpassword --from-literal PGPASSWORD=<value>
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
